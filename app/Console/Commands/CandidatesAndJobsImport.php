@@ -33,6 +33,7 @@ class CandidatesAndJobsImport extends Command
     {
         $this->candidatesImport();
         $this->jobsImport();
+        $this->getCandidateJobsList();
         
         return $this->info("Candidates and Jobs are Imported!");
     }
@@ -119,6 +120,25 @@ class CandidatesAndJobsImport extends Command
             }
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
+        }
+    }
+
+    public function getCandidateJobsList()
+    {
+        $candidates = Candidate::all(); 
+        foreach($candidates as $candidate) {
+
+            $this->warn("CandidateName: $candidate->first_name $candidate->last_name, Email: $candidate->email");
+
+            $candidate_jobs = Job::where('candidate_id', $candidate->id)
+                                ->orderBy('start_date', 'DESC')
+                                ->orderBy('end_date', 'DESC')
+                                ->limit(3)
+                                ->get();
+
+            foreach($candidate_jobs as $candidate_job) {
+                $this->line("Job Title: $candidate_job->job_title - Company: $candidate_job->company_name - StartDate: $candidate_job->start_date - EndDate: $candidate_job->end_date");
+            }
         }
     }
 }
